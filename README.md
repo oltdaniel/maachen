@@ -1,2 +1,15 @@
-# maachen
-:dizzy_face: organizing front-end into one piece
+# :dizzy_face: maachen
+
+organizing front-end into one piece
+
+## idea
+
+A small front-end framework with templating, http handling and input validation.
+You still need to write your regular HTML, but your JavaScript part of your
+application can be build upon our framework to handle front-end interaction.
+
+# license
+
+_just do what you want_
+
+MIT License
