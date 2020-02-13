@@ -1,3 +1,7 @@
+<p align="center"> 
+  <img src="assets/logo.png" width="150" alt="logo of maachen">
+</p>
+
 # :dizzy_face: maachen
 
 organizing front-end into one piece
