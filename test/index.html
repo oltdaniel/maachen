@@ -5,6 +5,8 @@
     <body>
         <main id="root">
             <h1 x-template>Hello {{message}}</h1>
+            <h1 x-template>Typed: {{input}}</h1>
+            <input type="text" placeholder="message" x-input="input">
         </main>
     </body>
 
@@ -18,8 +20,9 @@
         app.updateRenderer();
         // register variable
         app.setVariable('message', 'hello, world');
+        app.setVariable('input', 'placeholder');
         // render view
-        app.render()
+        app.render();
         // make update variable test
         setTimeout(function() {
             app.updateVariable('message', 'hello maachen')

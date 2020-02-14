@@ -16,23 +16,45 @@ function maachen(root) {
     this.root = root;
     this.renderer = {
         variables: [],
-        elements: []
+        elements: [],
+        inputs: [],
+        listeners: {
+            'values': {}
+        }
     };
     // initialized
     debug('initialized');
-    return this
 }
 
 maachen.prototype.updateRenderer = function() {
+    // keep track of the main scope
+    const t = this;
     // find all elements relevant to the renderer
     this.renderer.elements = this.root.querySelectorAll('*[x-template]');
+    this.renderer.inputs = this.root.querySelectorAll('*[x-input]');
     // store original context for rendering
     this.renderer.elements.forEach(function(el) {
         el.originalContent = el.innerHTML;
-    })
+    });
+    // register value listeners
+    this.renderer.inputs.forEach(function (el) {
+        // get variable scope
+        const variableName = el.getAttribute('x-input');
+        // set value change event
+        el.onkeyup = function () {
+            t.updateVariable(variableName, el.value);
+        };
+        // store listener element
+        if(!t.renderer.listeners['values'][variableName]) {
+            t.renderer.listeners['values'][variableName] = [el];
+        } else {
+            t.renderer.listeners['values'][variableName].push(el);
+        }
+    });
 };
 
 maachen.prototype.render = function() {
+    // track start time
     const start = new Date();
     // keep track of the main scope
     const t = this;
@@ -41,24 +63,31 @@ maachen.prototype.render = function() {
         const regex = config.template;
         let match = regex.exec(el.originalContent);
         while(match) {
-            if(t.renderer.variables[match[1]]) {
+            if(t.renderer.variables[match[1]] !== null) {
                 el.innerHTML = el.originalContent.replace(match[0], t.renderer.variables[match[1]]);
             }
             match = regex.exec(el.originalContent)
         }
     };
     // execute template on all relevant elements
-    this.renderer.elements.forEach(templateFunc);
-    // status info
+    t.renderer.elements.forEach(templateFunc);
+    // track end time
     const end = new Date();
-    debug('render complete in ' + (end - start) + 'ms')
+    // status info
+    debug('render complete in ' + (end - start) + 'ms (' + t.renderer.elements.length + ' elements)')
 };
 
 maachen.prototype.setVariable = function(tag, value) {
     // set variable
     this.renderer.variables[tag] = value;
+    // run listeners
+    if(this.renderer.listeners['values'][tag]) {
+        this.renderer.listeners['values'][tag].forEach(function (el) {
+            el.value = value;
+        });
+    }
     // status info
-    debug('registered "' + tag + '"="' + value + '".')
+    debug('set "' + tag + '"="' + value + '".')
 };
 
 maachen.prototype.updateVariable = function(tag, value) {
