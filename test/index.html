@@ -2,35 +2,37 @@
     <head>
         <title>maachen - test</title>
 
-        <style>
-            form > *, error-message {
-                display: block;
-            }
-
-            error-message {
-                color: red;
-            }
-        </style>
+        <link rel="stylesheet" href="style.css">
     </head>
     <body>
         <main id="root">
-            <h1 x-template>Hello {{message}}</h1>
-            <h1 x-template>Typed: {{input}}</h1>
-            <input type="text" placeholder="message" x-input="input">
-            <h1 x-template>Time: {{time}}</h1>
-            <h1>Login</h1>
-            <input type="text" value="in-relevant input" x-input disabled>
-            <form method="get" id="f-login" x-form>
-                <input-group>
-                    <label for="i-username">username</label>
-                    <input type="text" name="username" id="i-username" x-input="username" placeholder="john.doe" x-required>
-                </input-group>
-                <input-group>
-                    <label for="i-password">password</label>
-                    <input type="password" name="password" id="i-password" x-input="password" x-required>
-                </input-group>
-                <button type="submit">submit</button>
-            </form>
+            <p align="center">
+                <img src="../assets/logo.png" width="150" alt="logo of maachen">
+            </p>
+            <section>
+                <h2>Rendering</h2>
+                <p x-template>Hello {{message}}</p>
+                <p x-template>Time: {{time}}</p>
+            </section>
+            <section>
+                <h2>Input</h2>
+                <p x-template>Typed: {{input}}</p>
+                <input type="text" id="i-input" placeholder="message" x-input="input">
+            </section>
+            <section>
+                <h2>Forms</h2>
+                <form method="get" id="f-login" x-form>
+                    <input-group>
+                        <label for="i-username">username</label>
+                        <input type="text" name="username" id="i-username" x-input="username" placeholder="john.doe" x-required>
+                    </input-group>
+                    <input-group>
+                        <label for="i-password">password</label>
+                        <input type="password" name="password" id="i-password" x-input="password" x-required>
+                    </input-group>
+                    <button type="submit">submit</button>
+                </form>
+            </section>
         </main>
     </body>
 
