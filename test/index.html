@@ -1,16 +1,28 @@
-<html>
+<html lang="en">
     <head>
-
+        <title>maachen - test</title>
     </head>
     <body>
         <main id="root">
-            <h1>Hello world</h1>
+            <h1 x-template>Hello {{message}}</h1>
         </main>
     </body>
 
     <script src="../src/maachen.js"></script>
     <script>
-        setDebug(true);
-        const app = maachen(e('root'),true)
+        // enable debug
+        config.debug = true;
+        // initialize new app
+        const app = new maachen(e('root'));
+        // find renderer relevant elements
+        app.updateRenderer();
+        // register variable
+        app.setVariable('message', 'hello, world');
+        // render view
+        app.render()
+        // make update variable test
+        setTimeout(function() {
+            app.updateVariable('message', 'hello maachen')
+        }, 2000);
     </script>
 </html>
