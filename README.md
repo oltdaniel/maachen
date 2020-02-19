@@ -19,8 +19,8 @@ application can be build upon our framework to handle front-end interaction.
     - [ ] http
     - [ ] virtual dom builder
     - [ ] validation
-        - [ ] length
-        - [ ] email
+        - [X] length
+        - [X] email
         - [ ] regex
 
 # license
