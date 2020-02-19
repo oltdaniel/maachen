@@ -1,9 +1,35 @@
 let config = {
     debug: false,
-    template: /{{([^}}]+)}}/g
+    regex: {
+        template: /{{([^}}]+)}}/g,
+        email: /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+    },
+    inputTypes: {
+        'text': {
+            requiredRules: [],
+            allowedRules: ['required', 'min', 'max']
+        },
+        'number': {
+            requiredRules: ['required'],
+            allowedRules: ['required', 'min', 'max']
+        },
+        'checkbox': {
+            requiredRules: [],
+            allowedRules: ['required']
+        },
+        'email': {
+            requiredRules: ['required', 'email'],
+            allowedRules: ['required', 'email']
+        },
+        'password': {
+            requiredRules: ['required'],
+            allowedRules: ['required', 'min', 'max']
+        }
+    }
 };
 
 function debug(msg){if(config.debug===true){console.log(msg)}}
+function error(msg){console.error(msg)}
 function e(id){return document.getElementById(id)}
 
 function maachen(root) {
@@ -52,6 +78,13 @@ maachen.prototype.updateRenderer = function() {
             t.renderer.listeners['values'][variableName] = [el];
         } else {
             t.renderer.listeners['values'][variableName].push(el);
+        }
+        // assign types
+        const inputType = el.getAttribute('x-type');
+        if(inputType !== null && config.inputTypes[inputType] !== undefined) {
+            el.setAttribute('type', inputType);
+        } else if(inputType !== null) {
+            error('' + inputType + ' is not a valid type');
         }
     });
     // handle forms correctly
@@ -102,7 +135,7 @@ maachen.prototype.render = function() {
     const t = this;
     // execute template on a specific element
     const templateFunc = function(el) {
-        const regex = config.template;
+        const regex = config.regex.template;
         let match = regex.exec(el.originalContent);
         while(match) {
             if(t.renderer.variables[match[1]] !== null) {
@@ -139,32 +172,94 @@ maachen.prototype.updateVariable = function(tag, value) {
     this.render();
 };
 
-maachen.prototype.validateForm = function(el) {
-    el.querySelectorAll('error-message').forEach(function(el){el.remove();});
+maachen.prototype.validateForm = function(form) {
+    form.querySelectorAll('error-message').forEach(function(el){el.remove();});
     // status info
-    debug('validating ' + el.relevantInputs.elements.length + ' inputs');
+    debug('validating ' + form.relevantInputs.elements.length + ' inputs');
     // single input validation function
     let errorMessages = [];
     const validateInput = function(el) {
-        if(el.hasAttribute('x-required') && el.value.length === 0) {
-            errorMessages.push('input ' + el.previousElementSibling.innerText + ' required');
+        let thisErrorMessages = [];
+        if(!el.hasAttribute('type')) {
+            error('given input has no type attribute, #' + el.id);
+            return;
+        }
+        const checkRules = function(type) {
+            const rules = config.inputTypes[type];
+            if(rules === undefined) {return;}
+            let rulesToCheck = rules.requiredRules;
+            // check for optional rules
+            rules.allowedRules.forEach(function(rule) {
+                if(rulesToCheck.indexOf(rule) === -1 && el.hasAttribute('x-' + rule)) {
+                    rulesToCheck.push(rule)
+                }
+            });
+            // check rules that need to be checked
+            rulesToCheck.forEach(function(rule) {
+                let attr = el.getAttribute('x-' + rule);
+                if(rule === 'required') {
+                    if(type === 'checkbox') {
+                        if(!el.checked) {
+                            thisErrorMessages.push('checkbox ' + el.previousElementSibling.innerText + ' required');
+                        }
+                    } else if(el.value.length === 0) {
+                        thisErrorMessages.push('input ' + el.previousElementSibling.innerText + ' required');
+                    }
+                } else if(rule === 'min' && type !== 'checkbox') {
+                    attr = parseInt(attr);
+                    if(type === 'number') {
+                        const val = parseInt(el.value);
+                        if(val < attr) {
+                            thisErrorMessages.push('input ' + el.previousElementSibling.innerText + ' min value ' + attr);
+                        }
+                    } else {
+                        if(el.value.length < attr) {
+                            thisErrorMessages.push('input ' + el.previousElementSibling.innerText + ' min length ' + attr);
+                        }
+                    }
+                } else if(rule === 'max' && type !== 'checkbox') {
+                    attr = parseInt(attr);
+                    if(type === 'number') {
+                        const val = parseInt(el.value);
+                        if(val > attr) {
+                            thisErrorMessages.push('input ' + el.previousElementSibling.innerText + ' max value ' + attr);
+                        }
+                    } else {
+                        if(el.value.length > attr) {
+                            thisErrorMessages.push('input ' + el.previousElementSibling.innerText + ' min length ' + attr);
+                        }
+                    }
+                } else if(rule === 'email') {
+                    if(!config.regex.email.test(el.value)) {
+                        thisErrorMessages.push('valid email in ' + el.previousElementSibling.innerText + ' required');
+                    }
+                }
+            });
+        };
+        if(el.hasAttribute('x-type')) {
+            checkRules(el.getAttribute('x-type'));
+        }
+        // valid input if there are no error messages
+        if(thisErrorMessages.length === 0) {
+            return true;
+        } else {
+            errorMessages.push(...thisErrorMessages);
             return false;
         }
-        return true;
     };
     // validate all inputs and combine status
-    const inputs = el.relevantInputs.elements;
+    const inputs = form.relevantInputs.elements;
     let status = true;
     inputs.map(validateInput).forEach(function(el){status&=el;});
     // submit if all valid
     if(status) {
-        el.submit();
+        form.submit();
     } else {
         // display error messages
         let errorMessage = document.createElement('error-message');
         errorMessages.forEach(function(el) {
             errorMessage.innerHTML += el + '<br>';
         });
-        el.insertBefore(errorMessage, el.childNodes[0]);
+        form.insertBefore(errorMessage, form.childNodes[0]);
     }
 };

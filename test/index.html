@@ -24,13 +24,25 @@
                 <form method="get" id="f-login" x-form>
                     <input-group>
                         <label for="i-username">username</label>
-                        <input type="text" name="username" id="i-username" x-input="username" placeholder="john.doe" x-required>
+                        <input x-type="text" name="username" id="i-username" x-input="username" placeholder="john.doe" x-required>
+                    </input-group>
+                    <input-group>
+                        <label for="i-email">email</label>
+                        <input x-type="email" name="username" id="i-email" x-input="email" placeholder="john@doe.com" x-required>
                     </input-group>
                     <input-group>
                         <label for="i-password">password</label>
-                        <input type="password" name="password" id="i-password" x-input="password" x-required>
+                        <input x-type="password" name="password" id="i-password" x-input="password" x-required>
                     </input-group>
-                    <button type="submit">submit</button>
+                    <input-group>
+                        <label for="i-age">age</label>
+                        <input x-type="number" name="age" id="i-age" x-input="age" x-min="18" x-required>
+                    </input-group>
+                    <input-group>
+                        <label for="i-remember_me">remember me</label>
+                        <input x-type="checkbox" name="remember_me" id="i-remember_me" x-input="remember_me" x-required>
+                    </input-group>
+                    <button x-type="submit">submit</button>
                 </form>
             </section>
         </main>
